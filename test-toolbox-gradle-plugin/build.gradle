@@ -1,0 +1,45 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:2.2.3'
+    }
+}
+
+
+group 'co.edu.uniandes.miso.test_toolbox'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'groovy'
+
+repositories {
+    jcenter()
+    mavenCentral()
+}
+
+dependencies {
+    compile gradleApi()
+    compile localGroovy()
+    compile 'com.android.tools.build:gradle:2.2.3'
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+apply plugin: 'maven'
+
+uploadArchives {
+
+    repositories {
+        mavenDeployer {
+            repository(url: uri('C:/Dev/tmp/test-toolbox-repo'))
+        }
+    }
+}
+
+task collectRipperApks (type: Copy) {
+    from '../test-toolbox/app/build/ripper-dist'
+    into 'src/main/resources/ripper-dist'
+}
+
+processResources.dependsOn collectRipperApks

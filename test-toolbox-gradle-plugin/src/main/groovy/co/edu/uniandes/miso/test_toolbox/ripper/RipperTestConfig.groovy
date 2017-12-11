@@ -12,6 +12,7 @@ import java.nio.file.Paths
 
 class RipperTestConfig extends ToolboxTestType {
 
+    public static final RIPPER_APK = ["ripper-main.apk", "ripper-test.apk"]
 
     RipperTestConfig(Project project) {
         super(project)
@@ -45,8 +46,7 @@ class RipperTestConfig extends ToolboxTestType {
     }
 
     void copyRipperApks() {
-        def list = ["ripper-main.apk", "ripper-test.apk"]
-        list.each {
+        RIPPER_APK.each {
             InputStream source = getClass().getResourceAsStream("/ripper-dist/$it")
             if (source == null) {
                 throw new GradleException("Can't find apk $it")

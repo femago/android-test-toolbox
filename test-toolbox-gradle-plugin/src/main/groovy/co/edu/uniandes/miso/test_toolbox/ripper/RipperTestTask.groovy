@@ -12,6 +12,8 @@ import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.TaskAction
 
+import java.nio.file.Paths
+
 class RipperTestTask extends DefaultTask {
 
     @InputFile
@@ -69,12 +71,18 @@ class RipperTestTask extends DefaultTask {
     }
 
     def uninstallApkFromDevice(@NonNull ConnectedDevice device, @NonNull String packageName) {
+
+        RipperTestConfig.RIPPER_APK.each {
+            logger.lifecycle("Installing ripper instrumentation $it into device $device.name")
+            File ripperApk = Paths.get(project.getBuildDir().getPath(), "ripper-dist", it).toFile()
+            device.installPackage(ripperApk, Collections.emptyList(), 30000, stdLogger)
+        }
         if (apkFile != null) {
-            logger.lifecycle("Uninstall APK $packageName from device $device.name")
+            logger.lifecycle("Uninstalling APK $packageName from device $device.name")
             device.uninstallPackage(packageName, 30000, stdLogger)
-            logger.lifecycle("Install APK $packageName into device $device.name")
+            logger.lifecycle("Installing APK $packageName into device $device.name")
             device.installPackage(apkFile, new ArrayList<String>(), 30000, stdLogger)
-            logger.lifecycle("Uninstall/Install APK from $device.name ($device.serialNumber) done.")
+            logger.lifecycle("Uninstall/Install APK from $device.name ($device.serialNumber) done")
         }
     }
 

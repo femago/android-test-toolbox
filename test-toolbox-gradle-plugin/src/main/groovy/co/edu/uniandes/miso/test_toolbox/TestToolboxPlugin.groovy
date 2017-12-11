@@ -1,17 +1,9 @@
 package co.edu.uniandes.miso.test_toolbox
 
 import co.edu.uniandes.miso.test_toolbox.ripper.RipperTestConfig
-import co.edu.uniandes.miso.test_toolbox.ripper.RipperPluginExtension
-import co.edu.uniandes.miso.test_toolbox.ripper.RipperTestTask
-import com.android.build.gradle.AppExtension
 import com.android.build.gradle.AppPlugin
-import com.android.build.gradle.api.ApplicationVariant
-import org.apache.commons.io.FileUtils
-import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-
-import java.nio.file.Paths
 
 /*
  * @(#)TestToolboxPlugin.java

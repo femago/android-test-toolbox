@@ -1,11 +1,11 @@
 package co.edu.uniandes.miso.test_toolbox
 
+import co.edu.uniandes.miso.test_toolbox.ripper.RipperTestConfig
 import co.edu.uniandes.miso.test_toolbox.ripper.RipperPluginExtension
 import co.edu.uniandes.miso.test_toolbox.ripper.RipperTestTask
 import com.android.build.gradle.AppExtension
 import com.android.build.gradle.AppPlugin
 import com.android.build.gradle.api.ApplicationVariant
-import com.google.common.io.Files
 import org.apache.commons.io.FileUtils
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
@@ -24,19 +24,10 @@ class TestToolboxPlugin implements Plugin<Project> {
 
     @Override
     void apply(Project project) {
-        applyExtensions(project)
-        applyTasks(project)
-    }
-
-    void applyExtensions(Project project) {
-        project.extensions.create('ripper', RipperPluginExtension, project)
-    }
-
-    void applyTasks(Project project) {
         if (!project.plugins.hasPlugin(AppPlugin)) {
             throw new IllegalStateException("gradle-android-plugin not found")
         }
-        ripperTasks(project)
+        new RipperTestConfig(project).init()
         extraTasks(project)
 
     }
@@ -48,41 +39,6 @@ class TestToolboxPlugin implements Plugin<Project> {
         }
         showDevicesTask.group = TASKS_GROUP
         showDevicesTask.description = "Runs adb devices command"
-    }
-
-    void ripperTasks(Project project) {
-        project.logger.lifecycle('Start configuring ripper tasks')
-        copyRipperApks(project)
-
-        AppExtension android = project.extensions.getByType(AppExtension)
-        android.applicationVariants.all { ApplicationVariant variant ->
-            RipperTestTask task = project.tasks.create("ripper${variant.name.capitalize()}", RipperTestTask)
-            task.group = TASKS_GROUP
-            task.description = "Runs a ripper rutine against the ${variant.name.capitalize()} variant on the first connected device"
-            task.variantName = variant.name
-            task.outputs.upToDateWhen { false }
-
-            if (project.extensions.getByType(RipperPluginExtension).install) {
-                task.dependsOn(variant.assemble)
-                variant.outputs.each { output ->
-                    task.apkFile = output.outputFile
-                }
-            }
-        }
-    }
-
-    void copyRipperApks(Project project) {
-        def list = ["ripper-main.apk", "ripper-test.apk"]
-        list.each {
-            InputStream source = getClass().getResourceAsStream("/ripper-dist/$it")
-            if (source == null) {
-                throw new GradleException("Can't find apk $it")
-            }
-            File target = Paths.get(project.getBuildDir().getPath(), "ripper-dist", it).toFile()
-            def path = target.getPath()
-            project.logger.lifecycle("Copy $it to $path")
-            FileUtils.copyInputStreamToFile(source, target);
-        }
     }
 
 }

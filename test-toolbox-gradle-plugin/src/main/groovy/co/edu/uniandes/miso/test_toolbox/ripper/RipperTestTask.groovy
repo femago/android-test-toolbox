@@ -13,6 +13,10 @@ import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.TaskAction
 
 import java.nio.file.Paths
+import java.util.concurrent.Callable
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.Executors
+import java.util.concurrent.Future
 
 class RipperTestTask extends DefaultTask {
 
@@ -31,7 +35,7 @@ class RipperTestTask extends DefaultTask {
     String targetPackageName
 
     @TaskAction
-    def runRipperTest(){
+    def runRipperTest() {
 
         android = project.extensions.getByType(AppExtension)
         ripper = project.extensions.getByType(RipperPluginExtension)
@@ -42,6 +46,29 @@ class RipperTestTask extends DefaultTask {
         stdLogger = new StdLogger(StdLogger.Level.VERBOSE)
 
         collectDevices()
+        runRipperInDevices()
+    }
+
+    void runRipperInDevices() {
+        def threadPool = Executors.newFixedThreadPool(selectedDevices.size())
+        try {
+            List<Future> futures = selectedDevices.collect { device ->
+                threadPool.submit({ ->
+                    new RipperExecutor(variantName, device, targetPackageName, ripper).run();
+                } as Callable);
+            }
+            futures.each {
+                try {
+                    it.get()
+                } catch (ExecutionException e) {
+                    logger.error("Error while running tests: " + e.toString())
+                    //MonkeyResult result = new MonkeyResult(MonkeyResult.ResultStatus.Crash, monkey.eventCount, 0)
+                    //results.add(result)
+                }
+            }
+        } finally {
+            threadPool.shutdown()
+        }
     }
 
     void collectDevices() {
@@ -57,10 +84,9 @@ class RipperTestTask extends DefaultTask {
             ConnectedDevice device = it as ConnectedDevice
             if (!excludedDevices.contains(device.getSerialNumber())) {
                 logger.lifecycle("Use device: $device.name")
-                uninstallApkFromDevice(device, this.targetPackageName)
+                installApksIntoDevice(device, this.targetPackageName)
                 selectedDevices.add(device)
-            }
-            else {
+            } else {
                 logger.lifecycle("Skip device: $device.name")
             }
         }
@@ -70,13 +96,14 @@ class RipperTestTask extends DefaultTask {
         }
     }
 
-    def uninstallApkFromDevice(@NonNull ConnectedDevice device, @NonNull String packageName) {
+    def installApksIntoDevice(@NonNull ConnectedDevice device, @NonNull String packageName) {
 
         RipperTestConfig.RIPPER_APK.each {
             logger.lifecycle("Installing ripper instrumentation $it into device $device.name")
             File ripperApk = Paths.get(project.getBuildDir().getPath(), "ripper-dist", it).toFile()
             device.installPackage(ripperApk, Collections.emptyList(), 30000, stdLogger)
         }
+
         if (apkFile != null) {
             logger.lifecycle("Uninstalling APK $packageName from device $device.name")
             device.uninstallPackage(packageName, 30000, stdLogger)

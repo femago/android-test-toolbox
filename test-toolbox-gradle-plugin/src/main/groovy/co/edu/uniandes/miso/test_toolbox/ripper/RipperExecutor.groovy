@@ -59,7 +59,7 @@ class RipperExecutor {
         Collection<TestSuite> parsed = new TestExecutionProcessor(output).parse()
 
         for (TestSuite suite : parsed) {
-            File reportFile = new File(reportFileDirectory, "/ripper/TEST-ripper${variant.capitalize()}" +
+            File reportFile = new File(reportFileDirectory, "/ripper/TEST-${variant.capitalize()}" +
                     "-${device.name.replaceAll("\\s", "_")}-${device.serialNumber}-${suite.name}.xml")
             suite.hostname = device.name + "-" + device.serialNumber
             def reportsDir = reportFile.getParentFile()

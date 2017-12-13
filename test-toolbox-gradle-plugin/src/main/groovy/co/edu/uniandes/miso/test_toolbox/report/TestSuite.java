@@ -15,16 +15,30 @@ public class TestSuite {
          "  <system-err><![CDATA[]]></system-err>\n" +
          "</testsuite>";
 
+
    String name;
    int tests;
    int failures;
    String timestamp = "";
-   String hostname="";
+
+   String hostname = "";
    String time = "";
    Set<TestCase> cases = new HashSet<>();
 
    public TestSuite(String name) {
       this.name = name;
+   }
+
+   public String getName() {
+      return name;
+   }
+
+   public String getHostname() {
+      return hostname;
+   }
+
+   public void setHostname(String hostname) {
+      this.hostname = hostname;
    }
 
    public void increaseTest() {
@@ -50,7 +64,7 @@ public class TestSuite {
 
    private String casesToXml() {
       StringJoiner joiner = new StringJoiner("\n");
-      for (TestCase _case:cases){
+      for (TestCase _case : cases) {
          joiner.add(_case.toXml());
       }
       return joiner.toString();

@@ -56,7 +56,7 @@ class RipperTestTask extends DefaultTask {
         try {
             List<Future> futures = selectedDevices.collect { device ->
                 threadPool.submit({ ->
-                    new RipperExecutor(variantName, device, targetPackageName, ripper).run();
+                    new RipperExecutor(variantName, device, targetPackageName, ripper, reportFileDirectory).run();
                 } as Callable);
             }
             futures.each {

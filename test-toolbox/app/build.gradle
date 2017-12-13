@@ -32,6 +32,7 @@ dependencies {
 }
 
 task distRipper(type: Copy) {
+    dependsOn assemble, assembleAndroidTest
     from('build/outputs/apk') {
         include 'app-debug.apk'
         include 'app-debug-androidTest.apk'
@@ -40,4 +41,3 @@ task distRipper(type: Copy) {
     rename 'app-debug.apk', 'ripper-main.apk'
     rename 'app-debug-androidTest.apk', 'ripper-test.apk'
 }
-

@@ -2,6 +2,7 @@ package co.edu.uniandes.miso.test_toolbox.ripper;
 
 import android.app.ActivityManager;
 import android.app.Instrumentation;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -32,7 +33,7 @@ import static android.support.test.InstrumentationRegistry.getTargetContext;
  * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
  */
 @RunWith(AndroidJUnit4.class)
-public class RipperInstrumentedTest {
+public class RipperNavigationDrawerTest {
     private static final String BASIC_SAMPLE_PACKAGE
             = "info.frangor.laicare";
     private static final int LAUNCH_TIMEOUT = 5000;
@@ -43,7 +44,7 @@ public class RipperInstrumentedTest {
     public void setUp() throws Exception {
         Instrumentation instrumentation = getInstrumentation();
         Bundle arguments = getArguments();
-        Log.i(tag(),"Bundle Arguments: "+arguments);
+        Log.i(tag(), "Bundle Arguments: " + arguments);
         mDevice = UiDevice.getInstance(getInstrumentation());
         startMainActivityFromHomeScreen();
     }
@@ -66,59 +67,14 @@ public class RipperInstrumentedTest {
     }
 
     @Test
-    public void clickMenuItems() {
-        List<String> menuLabels = collectMenuItemsLabels();
-        Log.i(tag(), "Start --*---------------");
+    public void shouldOpenDrawer() {
 
-        for (String label : menuLabels) {
-            //Abrir menu
-            mDevice.pressMenu();
-            //Seleccionar por label y click
-            mDevice.findObject(By.text(label)).clickAndWait(Until.newWindow(), 2000);
-            //Ver si cambio la actividad
-            inferActivityName();
-            sleep(1);
-            //Volver a actividad inicial
-            goToMainActivity();
-
-            sleep(1);
-        }
-        Log.i(tag(), "End Test");
     }
 
-    private void inferActivityName() {
-        ActivityManager am = (ActivityManager) getTargetContext().getSystemService(Context.ACTIVITY_SERVICE);
-        List<ActivityManager.RunningTaskInfo> taskInfo = am.getRunningTasks(1);
-        Log.i("TopActivity", "CURRENT Activity:" + taskInfo.get(0).topActivity.getClassName());
+    @Test
+    public void shouldNotFailOnDrawerItemClick() {
+        throw new ActivityNotFoundException();
     }
-
-    private void sleep(int i) {
-        try {
-            Thread.sleep(i * 1000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void dump() {
-        try {
-            mDevice.dumpWindowHierarchy(System.out);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private List<String> collectMenuItemsLabels() {
-        mDevice.pressMenu();
-        List<UiObject2> objects = mDevice.findObjects(By.clazz(TextView.class));
-        List<String> labels = new ArrayList<>(objects.size());
-        for (UiObject2 obj : objects) {
-            labels.add(obj.getText());
-        }
-        mDevice.pressBack();
-        return labels;
-    }
-
 
     private String tag() {
         return this.getClass().getName();

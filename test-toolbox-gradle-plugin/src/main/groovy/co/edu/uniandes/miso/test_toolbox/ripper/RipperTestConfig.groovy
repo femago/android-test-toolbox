@@ -4,6 +4,7 @@ import co.edu.uniandes.miso.test_toolbox.TestToolboxPlugin
 import co.edu.uniandes.miso.test_toolbox.ToolboxTestType
 import com.android.build.gradle.AppExtension
 import com.android.build.gradle.api.ApplicationVariant
+import com.android.builder.core.BuilderConstants
 import org.apache.commons.io.FileUtils
 import org.gradle.api.GradleException
 import org.gradle.api.Project
@@ -35,6 +36,7 @@ class RipperTestConfig extends ToolboxTestType {
             task.description = "Runs a ripper rutine against the ${variant.name.capitalize()} variant on the connected devices"
             task.variantName = variant.name
             task.outputs.upToDateWhen { false }
+            task.reportFileDirectory = new File(project.buildDir, BuilderConstants.FD_REPORTS)
 
             if (project.extensions.getByType(RipperPluginExtension).reinstallApk) {
                 task.dependsOn(variant.assemble)

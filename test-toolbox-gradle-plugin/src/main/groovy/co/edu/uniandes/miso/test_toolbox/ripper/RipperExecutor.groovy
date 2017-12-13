@@ -45,12 +45,13 @@ class RipperExecutor {
         LOGGER.lifecycle("$device.name ($device.serialNumber) <-- Command: " + command)
 
         device.executeShellCommand(command, receiver, extensions.timeOut, TimeUnit.SECONDS)
-        String monkeyOutput = "$device.name ($device.serialNumber)\n" + receiver.output
+        def output = receiver.output
+        LOGGER.lifecycle("$device.name ($device.serialNumber)")
         LOGGER.lifecycle(monkeyOutput)
 
 
 
-//        File reportFile = new File(reportFileDirectory, "monkey${variantName.capitalize()}-${device.name.replaceAll("\\s", "_")}-${device.serialNumber}.txt")
+        File reportFile = new File(reportFileDirectory, "/ripper/TEST-ripper-${variant.capitalize()}-${device.name.replaceAll("\\s", "_")}-${device.serialNumber}.xml")
 //        def reportsDir = reportFile.getParentFile()
 //        if (!reportsDir.exists() && !reportsDir.mkdirs()) {
 //            throw new GradleException("Could not create reports directory: " + reportsDir.getAbsolutePath())

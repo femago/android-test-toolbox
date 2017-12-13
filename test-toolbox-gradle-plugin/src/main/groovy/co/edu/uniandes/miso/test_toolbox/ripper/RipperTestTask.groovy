@@ -20,6 +20,8 @@ import java.util.concurrent.Future
 
 class RipperTestTask extends DefaultTask {
 
+    File reportFileDirectory
+
     @InputFile
     @Optional
     File apkFile

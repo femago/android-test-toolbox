@@ -11,6 +11,7 @@ import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
 
 import java.util.concurrent.TimeUnit
+import java.util.stream.Collectors
 
 /*
  * @(#)RipperExecutor.java
@@ -25,6 +26,7 @@ class RipperExecutor {
             "am instrument -w -r " +
                     "-e debug false " +
                     "-e targetAndroidPackage ###targetAndroidPackage " +
+                    "-e class ###selectedTests " +
                     " co.edu.uniandes.miso.test_toolbox.ripper.test/android.support.test.runner.AndroidJUnitRunner"
 
     private ConnectedDevice device
@@ -49,12 +51,20 @@ class RipperExecutor {
     def run() {
         CollectingOutputReceiver receiver = new CollectingOutputReceiver()
 
-        def replacedCommand = command.replace("###targetAndroidPackage", extensions.targetPackageName)
+
+        String classes = extensions.selectedRippers.stream()
+                .filter({RipperPluginExtension.TEST_TYPES.get(it)!=null})
+                .map({RipperPluginExtension.TEST_TYPES.get(it)})
+                .collect(Collectors.joining(","))
+
+        def replacedCommand = command
+                .replace("###targetAndroidPackage", extensions.targetPackageName)
+                .replace("###selectedTests",classes)
+
         LOGGER.lifecycle("$device.name ($device.serialNumber) <-- Command: " + replacedCommand)
 
         device.executeShellCommand(replacedCommand, receiver, extensions.timeOut, TimeUnit.SECONDS)
         def output = receiver.output
-        LOGGER.lifecycle("$device.name ($device.serialNumber)")
         LOGGER.lifecycle(output)
 
         Collection<TestSuite> parsed = new TestExecutionProcessor(output).parse()

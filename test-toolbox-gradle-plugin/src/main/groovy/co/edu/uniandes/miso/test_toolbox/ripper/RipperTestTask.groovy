@@ -47,9 +47,14 @@ class RipperTestTask extends DefaultTask {
         ripper = project.extensions.getByType(RipperPluginExtension)
 
         inferredTargetPackageName = packageName()
+
         if (ripper.targetPackageName == "")
             ripper.targetPackageName = inferredTargetPackageName
-        logger.lifecycle("Starting ripper task $variantName for package ${ripper.targetPackageName}")
+
+        if(ripper.selectedRippers.empty)
+            throw new GradleException("At least on ripper must be selected ${RipperPluginExtension.TEST_TYPES.keySet()}")
+
+        logger.lifecycle("Starting ripper task $variantName for package ${ripper.targetPackageName} applying rippers ${ripper.selectedRippers}")
 
         stdLogger = new StdLogger(StdLogger.Level.VERBOSE)
 

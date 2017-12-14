@@ -1,5 +1,6 @@
 package co.edu.uniandes.miso.test_toolbox
 
+import co.edu.uniandes.miso.test_toolbox.monkey.MonkeyTestConfig
 import co.edu.uniandes.miso.test_toolbox.ripper.RipperTestConfig
 import com.android.build.gradle.AppPlugin
 import org.gradle.api.Plugin
@@ -24,6 +25,7 @@ class TestToolboxPlugin implements Plugin<Project> {
             throw new IllegalStateException("gradle-android-plugin not found")
         }
         new RipperTestConfig(project).init()
+        new MonkeyTestConfig(project).init()
         extraTasks(project)
     }
 

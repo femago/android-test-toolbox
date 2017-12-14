@@ -75,8 +75,6 @@ class RipperTestTask extends DefaultTask {
                     it.get()
                 } catch (ExecutionException e) {
                     logger.error("Error while running tests: " + e.toString(), e)
-                    //MonkeyResult result = new MonkeyResult(MonkeyResult.ResultStatus.Crash, monkey.eventCount, 0)
-                    //results.add(result)
                 }
             }
         } finally {
@@ -89,18 +87,18 @@ class RipperTestTask extends DefaultTask {
         cdp.init()
 
         Collection<String> excludedDevices = ripper.excludedDevices
-
+        logger.lifecycle("List of devices to exclude: $excludedDevices")
         //ArrayList<MonkeyResult> results = new ArrayList<>()
         selectedDevices = Lists.newArrayList()
 
         cdp.devices.each {
             ConnectedDevice device = it as ConnectedDevice
             if (!excludedDevices.contains(device.getSerialNumber())) {
-                logger.lifecycle("Use device: $device.name")
+                logger.lifecycle("Use device: $device.name $device.serialNumber")
                 installApksIntoDevice(device, this.inferredTargetPackageName)
                 selectedDevices.add(device)
             } else {
-                logger.lifecycle("Skip device: $device.name")
+                logger.lifecycle("Skip device: $device.name $device.serialNumber")
             }
         }
 

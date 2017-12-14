@@ -1,3 +1,4 @@
+//https://afterecho.uk/blog/create-a-standalone-gradle-plugin-for-android-a-step-by-step-guide.html
 buildscript {
     repositories {
         mavenCentral()

@@ -6,6 +6,7 @@ import com.android.builder.testing.ConnectedDevice
 import com.android.builder.testing.ConnectedDeviceProvider
 import com.android.utils.StdLogger
 import com.google.common.collect.Lists
+import org.apache.commons.io.FileUtils
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.tasks.InputFile
@@ -20,7 +21,7 @@ import java.util.concurrent.Future
 
 class RipperTestTask extends DefaultTask {
 
-    File reportFileDirectory
+    File testResultDirectory
 
     @InputFile
     @Optional
@@ -34,16 +35,21 @@ class RipperTestTask extends DefaultTask {
     StdLogger stdLogger
 
     List<ConnectedDevice> selectedDevices
-    String targetPackageName
+    String inferredTargetPackageName
 
     @TaskAction
     def runRipperTest() {
+        if(testResultDirectory.exists())
+            FileUtils.deleteDirectory(testResultDirectory)
+        testResultDirectory.mkdirs()
 
         android = project.extensions.getByType(AppExtension)
         ripper = project.extensions.getByType(RipperPluginExtension)
 
-        targetPackageName = packageName()
-        logger.lifecycle("Starting ripper task $variantName for package $targetPackageName")
+        inferredTargetPackageName = packageName()
+        if (ripper.targetPackageName == "")
+            ripper.targetPackageName = inferredTargetPackageName
+        logger.lifecycle("Starting ripper task $variantName for package ${ripper.targetPackageName}")
 
         stdLogger = new StdLogger(StdLogger.Level.VERBOSE)
 
@@ -56,14 +62,14 @@ class RipperTestTask extends DefaultTask {
         try {
             List<Future> futures = selectedDevices.collect { device ->
                 threadPool.submit({ ->
-                    new RipperExecutor(variantName, device, targetPackageName, ripper, reportFileDirectory).run();
+                    new RipperExecutor(variantName, device, ripper, testResultDirectory).run();
                 } as Callable);
             }
             futures.each {
                 try {
                     it.get()
                 } catch (ExecutionException e) {
-                    logger.error("Error while running tests: " + e.toString())
+                    logger.error("Error while running tests: " + e.toString(), e)
                     //MonkeyResult result = new MonkeyResult(MonkeyResult.ResultStatus.Crash, monkey.eventCount, 0)
                     //results.add(result)
                 }
@@ -86,7 +92,7 @@ class RipperTestTask extends DefaultTask {
             ConnectedDevice device = it as ConnectedDevice
             if (!excludedDevices.contains(device.getSerialNumber())) {
                 logger.lifecycle("Use device: $device.name")
-                installApksIntoDevice(device, this.targetPackageName)
+                installApksIntoDevice(device, this.inferredTargetPackageName)
                 selectedDevices.add(device)
             } else {
                 logger.lifecycle("Skip device: $device.name")

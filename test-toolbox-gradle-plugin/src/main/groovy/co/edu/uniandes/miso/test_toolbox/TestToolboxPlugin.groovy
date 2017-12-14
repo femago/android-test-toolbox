@@ -4,6 +4,10 @@ import co.edu.uniandes.miso.test_toolbox.ripper.RipperTestConfig
 import com.android.build.gradle.AppPlugin
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.reporting.Report
+
+import java.nio.file.Path
+import java.nio.file.Paths
 
 /*
  * @(#)TestToolboxPlugin.java
@@ -21,7 +25,6 @@ class TestToolboxPlugin implements Plugin<Project> {
         }
         new RipperTestConfig(project).init()
         extraTasks(project)
-
     }
 
     void extraTasks(Project project) {
@@ -31,6 +34,7 @@ class TestToolboxPlugin implements Plugin<Project> {
         }
         showDevicesTask.group = TASKS_GROUP
         showDevicesTask.description = "Runs adb devices command"
+
     }
 
 }

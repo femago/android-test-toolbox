@@ -23,7 +23,12 @@ public class TestSuite {
 
    String hostname = "";
    String time = "";
+
    Set<TestCase> cases = new HashSet<>();
+
+   public Set<TestCase> getCases() {
+      return cases;
+   }
 
    public TestSuite(String name) {
       this.name = name;
@@ -51,6 +56,10 @@ public class TestSuite {
 
    public void addTest(TestCase _case) {
       cases.add(_case);
+   }
+
+   public void setName(String name) {
+      this.name = name;
    }
 
    public String toXml() {

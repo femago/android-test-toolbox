@@ -22,36 +22,37 @@ class RipperExecutor {
     private static final Logger LOGGER = Logging.getLogger(RipperExecutor.class);
 
     private static final String command =
-            "am instrument -w -r -e debug false co.edu.uniandes.miso.test_toolbox.ripper.test/android.support.test.runner.AndroidJUnitRunner"
+            "am instrument -w -r " +
+                    "-e debug false " +
+                    "-e targetAndroidPackage ###targetAndroidPackage " +
+                    " co.edu.uniandes.miso.test_toolbox.ripper.test/android.support.test.runner.AndroidJUnitRunner"
 
     private ConnectedDevice device
 
     private String variant
-    private String packageForRipper
 
     private RipperPluginExtension extensions
 
-    private File reportFileDirectory
+    private File testResultDirectory
 
     RipperExecutor(
             @NonNull String variant,
             @NonNull ConnectedDevice device,
-            @NonNull String packageForRipper,
             @NonNull RipperPluginExtension extensions,
-            @NonNull File reportFileDirectory) {
+            @NonNull File testResultDirectory) {
         this.device = device;
         this.variant = variant;
-        this.packageForRipper = packageForRipper
         this.extensions = extensions
-        this.reportFileDirectory = reportFileDirectory
+        this.testResultDirectory = testResultDirectory
     }
 
     def run() {
         CollectingOutputReceiver receiver = new CollectingOutputReceiver()
 
-        LOGGER.lifecycle("$device.name ($device.serialNumber) <-- Command: " + command)
+        def replacedCommand = command.replace("###targetAndroidPackage", extensions.targetPackageName)
+        LOGGER.lifecycle("$device.name ($device.serialNumber) <-- Command: " + replacedCommand)
 
-        device.executeShellCommand(command, receiver, extensions.timeOut, TimeUnit.SECONDS)
+        device.executeShellCommand(replacedCommand, receiver, extensions.timeOut, TimeUnit.SECONDS)
         def output = receiver.output
         LOGGER.lifecycle("$device.name ($device.serialNumber)")
         LOGGER.lifecycle(output)
@@ -59,9 +60,13 @@ class RipperExecutor {
         Collection<TestSuite> parsed = new TestExecutionProcessor(output).parse()
 
         for (TestSuite suite : parsed) {
-            File reportFile = new File(reportFileDirectory, "/ripper/TEST-${variant.capitalize()}" +
-                    "-${device.name.replaceAll("\\s", "_")}-${device.serialNumber}-${suite.name}.xml")
+            File reportFile = new File(testResultDirectory, "TEST-${device.name.replaceAll("\\s", "_")}-${suite.name}.xml")
+
             suite.hostname = device.name + "-" + device.serialNumber
+            suite.name = suite.name.reverse().replaceFirst("\\.", ".${device.serialNumber}.".reverse()).reverse()
+
+            suite.cases.forEach({it.classname=suite.name} )
+
             def reportsDir = reportFile.getParentFile()
             if (!reportsDir.exists() && !reportsDir.mkdirs()) {
                 throw new GradleException("Could not create reports directory: " + reportsDir.getAbsolutePath())

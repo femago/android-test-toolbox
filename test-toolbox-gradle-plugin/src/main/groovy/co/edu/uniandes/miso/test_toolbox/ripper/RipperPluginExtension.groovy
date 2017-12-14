@@ -7,6 +7,7 @@ class RipperPluginExtension {
      * Attempts to uninstall and then install the variant´s apk
      */
     boolean reinstallApk = false
+    String targetPackageName = ""
 
     int connectTimeoutMs = 5000
     int timeOut = 60
